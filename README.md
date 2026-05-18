@@ -121,18 +121,14 @@ A collection of 5 interactive web applications showcasing various web developmen
 
 MIT License - Feel free to use these projects for learning and inspiration!
 
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/YOUR-USERNAME/portfolio-projects/issues).
 
 ## 👨‍💻 Author
 
 **Haris Khan**
 
-- GitHub: [@YOUR-USERNAME](https://github.com/YOUR-USERNAME)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/your-profile)
-- Portfolio: [Your Website](https://yourwebsite.com)
-- Email: your.email@example.com
+- GitHub:    (https://github.com/haris-khan-devv)
+- Portfolio: https://code-weaver--Haris-KhanKhan.replit.app
+- Email:     harriskhan523@gmail.com
 
 
 
