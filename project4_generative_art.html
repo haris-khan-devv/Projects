@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative Art Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #2a2a2a;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        canvas {
+            border: 2px solid #444;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+            max-width: 100%;
+            max-height: 90vh;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #aaa;
+            text-transform: uppercase;
+            font-size: 0.85em;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: #444;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            display: inline-block;
+            background: #444;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .color-input {
+            width: 100%;
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .button-secondary {
+            background: #444;
+            color: white;
+        }
+
+        .button-secondary:hover {
+            background: #555;
+        }
+
+        .pattern-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #444;
+            border-radius: 8px;
+            background: #2a2a2a;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .pattern-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .info-box {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>🎨 Generative Art Studio</h1>
+            
+            <div class="control-group">
+                <label class="control-label">Pattern Type</label>
+                <select class="pattern-select" id="patternType" onchange="generateArt()">
+                    <option value="circles">Circles</option>
+                    <option value="squares">Squares</option>
+                    <option value="triangles">Triangles</option>
+                    <option value="waves">Waves</option>
+                    <option value="spirals">Spirals</option>
+                    <option value="particles">Particles</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Complexity</label>
+                <input type="range" class="slider" id="complexity" min="5" max="200" value="50" 
+                       oninput="updateValue('complexity'); generateArt()">
+                <span class="value-display" id="complexityValue">50</span>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Size</label>
+                <input type="range" class="slider" id="size" min="1" max="100" value="30" 
+                       oninput="updateValue('size'); generateArt()">
+                <span class="value-display" id="sizeValue">30</span>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Animation Speed</label>
+                <input type="range" class="slider" id="speed" min="0" max="10" value="2" 
+                       oninput="updateValue('speed')">
+                <span class="value-display" id="speedValue">2</span>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Color 1</label>
+                <input type="color" class="color-input" id="color1" value="#667eea" 
+                       onchange="generateArt()">
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Color 2</label>
+                <input type="color" class="color-input" id="color2" value="#764ba2" 
+                       onchange="generateArt()">
+            </div>
+
+            <button class="button button-primary" onclick="generateArt()">
+                ✨ Generate New Art
+            </button>
+            
+            <button class="button button-secondary" onclick="downloadArt()">
+                💾 Download Image
+            </button>
+
+            <button class="button button-secondary" onclick="toggleAnimation()">
+                ▶️ Toggle Animation
+            </button>
+
+            <div class="info-box">
+                💡 <strong>Tip:</strong> Adjust the controls and click "Generate New Art" to create unique patterns. Each generation is randomized!
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="artCanvas" width="800" height="800"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('artCanvas');
+        const ctx = canvas.getContext('2d');
+        let animationId;
+        let isAnimating = false;
+        let time = 0;
+
+        function updateValue(id) {
+            const element = document.getElementById(id);
+            const valueDisplay = document.getElementById(id + 'Value');
+            valueDisplay.textContent = element.value;
+        }
+
+        function getSettings() {
+            return {
+                pattern: document.getElementById('patternType').value,
+                complexity: parseInt(document.getElementById('complexity').value),
+                size: parseInt(document.getElementById('size').value),
+                speed: parseInt(document.getElementById('speed').value),
+                color1: document.getElementById('color1').value,
+                color2: document.getElementById('color2').value
+            };
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function interpolateColor(color1, color2, factor) {
+            const c1 = hexToRgb(color1);
+            const c2 = hexToRgb(color2);
+            const r = Math.round(c1.r + (c2.r - c1.r) * factor);
+            const g = Math.round(c1.g + (c2.g - c1.g) * factor);
+            const b = Math.round(c1.b + (c2.b - c1.b) * factor);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function generateArt() {
+            const settings = getSettings();
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            switch(settings.pattern) {
+                case 'circles':
+                    drawCircles(settings);
+                    break;
+                case 'squares':
+                    drawSquares(settings);
+                    break;
+                case 'triangles':
+                    drawTriangles(settings);
+                    break;
+                case 'waves':
+                    drawWaves(settings);
+                    break;
+                case 'spirals':
+                    drawSpirals(settings);
+                    break;
+                case 'particles':
+                    drawParticles(settings);
+                    break;
+            }
+        }
+
+        function drawCircles(settings) {
+            for (let i = 0; i < settings.complexity; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * settings.size;
+                const colorFactor = i / settings.complexity;
+                
+                ctx.fillStyle = interpolateColor(settings.color1, settings.color2, colorFactor);
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawSquares(settings) {
+            for (let i = 0; i < settings.complexity; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * settings.size;
+                const rotation = Math.random() * Math.PI;
+                const colorFactor = i / settings.complexity;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rotation);
+                ctx.fillStyle = interpolateColor(settings.color1, settings.color2, colorFactor);
+                ctx.globalAlpha = 0.6;
+                ctx.fillRect(-size/2, -size/2, size, size);
+                ctx.restore();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawTriangles(settings) {
+            for (let i = 0; i < settings.complexity; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * settings.size;
+                const colorFactor = i / settings.complexity;
+                
+                ctx.fillStyle = interpolateColor(settings.color1, settings.color2, colorFactor);
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(x, y - size);
+                ctx.lineTo(x - size, y + size);
+                ctx.lineTo(x + size, y + size);
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawWaves(settings) {
+            ctx.strokeStyle = settings.color1;
+            ctx.lineWidth = 2;
+            
+            for (let i = 0; i < settings.complexity / 10; i++) {
+                const colorFactor = i / (settings.complexity / 10);
+                ctx.strokeStyle = interpolateColor(settings.color1, settings.color2, colorFactor);
+                ctx.globalAlpha = 0.7;
+                ctx.beginPath();
+                
+                for (let x = 0; x < canvas.width; x += 5) {
+                    const y = canvas.height / 2 + 
+                             Math.sin((x + i * 20) * 0.01) * settings.size +
+                             Math.sin((x + i * 30) * 0.02) * settings.size * 0.5;
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawSpirals(settings) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            for (let i = 0; i < settings.complexity / 20; i++) {
+                const colorFactor = i / (settings.complexity / 20);
+                ctx.strokeStyle = interpolateColor(settings.color1, settings.color2, colorFactor);
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.7;
+                ctx.beginPath();
+                
+                for (let angle = 0; angle < Math.PI * 8; angle += 0.1) {
+                    const radius = angle * settings.size * 0.5;
+                    const x = centerX + Math.cos(angle + i * 0.5) * radius;
+                    const y = centerY + Math.sin(angle + i * 0.5) * radius;
+                    
+                    if (angle === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawParticles(settings) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            for (let i = 0; i < settings.complexity; i++) {
+                const angle = (i / settings.complexity) * Math.PI * 2;
+                const distance = Math.random() * canvas.width / 2;
+                const x = centerX + Math.cos(angle) * distance;
+                const y = centerY + Math.sin(angle) * distance;
+                const size = Math.random() * settings.size * 0.5;
+                const colorFactor = distance / (canvas.width / 2);
+                
+                ctx.fillStyle = interpolateColor(settings.color1, settings.color2, colorFactor);
+                ctx.globalAlpha = 0.7;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function animate() {
+            const settings = getSettings();
+            time += settings.speed * 0.01;
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Simple animation effect
+            const x = canvas.width / 2 + Math.cos(time) * 200;
+            const y = canvas.height / 2 + Math.sin(time) * 200;
+            
+            ctx.fillStyle = settings.color1;
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath();
+            ctx.arc(x, y, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            
+            if (isAnimating) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function toggleAnimation() {
+            isAnimating = !isAnimating;
+            if (isAnimating) {
+                animate();
+            } else {
+                cancelAnimationFrame(animationId);
+                generateArt();
+            }
+        }
+
+        function downloadArt() {
+            const link = document.createElement('a');
+            link.download = 'generative-art-' + Date.now() + '.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Initialize with first generation
+        generateArt();
+    </script>
+</body>
+</html>
